@@ -3,6 +3,7 @@ use std::net::SocketAddr;
 use anyhow::{Ok, Result, anyhow};
 use string_analyser::{
     api::build_app,
+    cache::{connection::create_redis_client, service::CacheService},
     db::{pool::create_pool, repositories::StringRepository},
     models::state::AppState,
     utils::config::load_config,
@@ -15,13 +16,19 @@ async fn main() -> Result<()> {
 
     let config_data = load_config()?;
 
-    let pool = create_pool(&config_data.0, config_data.1, config_data.2)
+    let pool = create_pool(&config_data.0, *&config_data.2, *&config_data.3)
         .await
         .map_err(|e| anyhow!("Database connection error {}", e))?;
 
+    let redis = create_redis_client(&config_data.1)
+        .await
+        .map_err(|e| anyhow!("Redis connection error {}", e))?;
+
     let repository = StringRepository::new(pool);
 
-    let state = AppState { repository };
+    let cache = CacheService::new(redis);
+
+    let state = AppState { repository, cache };
 
     let app = build_app(state).await;
 

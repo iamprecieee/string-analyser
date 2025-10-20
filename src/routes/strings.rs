@@ -16,7 +16,10 @@ use crate::{
         responses::{ApiErrorResponse, GetStringsResponse},
         state::AppState,
     },
-    utils::{analyser::analyse_string, nlp::parse_natural_language},
+    utils::{
+        analyser::{analyse_string, compute_sha256},
+        nlp::parse_natural_language,
+    },
 };
 
 pub async fn create_string(
@@ -62,7 +65,17 @@ pub async fn create_string(
             };
 
             match state.repository.create(&analysed_string).await {
-                Ok(_) => (StatusCode::CREATED, Json(analysed_string)).into_response(),
+                Ok(_) => {
+                    let cache_clone = state.cache.clone();
+                    let analysed_string_clone = analysed_string.clone();
+
+                    tokio::spawn(async move {
+                        let _ = cache_clone.set(&analysed_string_clone).await;
+                        let _ = cache_clone.invalidate().await;
+                    });
+
+                    (StatusCode::CREATED, Json(analysed_string)).into_response()
+                }
                 Err(_) => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     Json(ApiErrorResponse::internal_error(
@@ -100,12 +113,26 @@ pub async fn get_string(
 ) -> impl IntoResponse {
     let normalised_string_value = string_value.trim();
 
+    let id = compute_sha256(&normalised_string_value);
+
+    if let Ok(Some(analysed_string_cache)) = state.cache.get(&id).await {
+        return (StatusCode::OK, Json(analysed_string_cache)).into_response();
+    }
+
     match state
         .repository
         .get_by_value(&normalised_string_value)
         .await
     {
-        Ok(Some(analysed_string)) => (StatusCode::OK, Json(analysed_string)).into_response(),
+        Ok(Some(analysed_string)) => {
+            let cache_clone = state.cache.clone();
+            let analysed_string_clone = analysed_string.clone();
+
+            tokio::spawn(async move {
+                let _ = cache_clone.set(&analysed_string_clone).await;
+            });
+            (StatusCode::OK, Json(analysed_string)).into_response()
+        }
         Ok(None) => (
             StatusCode::NOT_FOUND,
             Json(ApiErrorResponse::not_found(
@@ -189,7 +216,16 @@ pub async fn delete_string(
         .delete_by_value(&normalised_string_value)
         .await
     {
-        Ok(true) => (StatusCode::NO_CONTENT).into_response(),
+        Ok(true) => {
+            let id = compute_sha256(&string_value);
+            
+            let cache_clone = state.cache.clone();
+            tokio::spawn(async move {
+                let _ = cache_clone.delete(&id).await;
+                let _ = cache_clone.invalidate().await;
+            });
+
+            (StatusCode::NO_CONTENT).into_response()},
         Ok(false) => (
             StatusCode::NOT_FOUND,
             Json(ApiErrorResponse::not_found(
