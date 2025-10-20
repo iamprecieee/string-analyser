@@ -1,5 +1,5 @@
 [package]
-name = "string-analyser"
+name = "string_analyser"
 version = "0.1.0"
 edition = "2024"
 
@@ -19,8 +19,8 @@ utoipa = { version = "5.4.0", features = ["axum_extras"] }
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
 
 [[bin]]
-name = "string-analyser"
+name = "string_analyser"
 
 [lib]
-name = "string-analyser"
+name = "string_analyser"
 path = "src/lib.rs"

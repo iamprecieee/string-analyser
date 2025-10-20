@@ -17,11 +17,11 @@ COPY src/ ./src/
 
 ENV SQLX_OFFLINE=true
 
-RUN cargo build --release --bin string-analyser
+RUN cargo build --release --bin string_analyser
 
 FROM gcr.io/distroless/cc-debian12
 
-COPY --from=builder /app/target/release/string-analyser /app
+COPY --from=builder /app/target/release/string_analyser /app
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
