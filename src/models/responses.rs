@@ -1,16 +1,17 @@
 use serde::Serialize;
 use serde_json::Value;
+use utoipa::ToSchema;
 
 use crate::models::properties::AnalysedString;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct GetStringsResponse {
     pub data: Vec<AnalysedString>,
     pub count: usize,
     pub filters_applied: Value,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct ApiErrorResponse {
     pub code: String,
     pub message: String,

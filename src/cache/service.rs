@@ -1,4 +1,4 @@
-use redis::{AsyncCommands, RedisError, aio::MultiplexedConnection};
+use redis::{aio::MultiplexedConnection, AsyncCommands, RedisError};
 
 use crate::models::properties::AnalysedString;
 
@@ -10,6 +10,10 @@ pub struct CacheService {
 impl CacheService {
     pub fn new(redis: MultiplexedConnection) -> Self {
         Self { redis }
+    }
+
+    pub fn clone_redis(&self) -> MultiplexedConnection {
+        self.redis.clone()
     }
 
     pub async fn get(&self, id: &str) -> Result<Option<AnalysedString>, RedisError> {

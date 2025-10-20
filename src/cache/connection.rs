@@ -1,4 +1,4 @@
-use redis::{Client, RedisError, aio::MultiplexedConnection};
+use redis::{aio::MultiplexedConnection, Client, RedisError};
 
 pub async fn create_redis_client(redis_url: &str) -> Result<MultiplexedConnection, RedisError> {
     let client = Client::open(redis_url)?;

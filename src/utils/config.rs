@@ -1,8 +1,8 @@
 use std::env;
 
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 
-pub fn load_config() -> Result<(String, String, u32, u64)> {
+pub fn load_config() -> Result<(String, String, u32, u64, String, u32)> {
     let database_url =
         env::var("DATABASE_URL").map_err(|e| anyhow!("Missing DATABASE_URL: {}", e))?;
 
@@ -26,10 +26,19 @@ pub fn load_config() -> Result<(String, String, u32, u64)> {
         )
     })?;
 
+    let host = env::var("SERVER_HOST").unwrap_or(String::from("0.0.0.0"));
+
+    let port = env::var("REDIS_URL")
+        .unwrap_or_else(|_| String::from("8000"))
+        .parse()
+        .unwrap_or(8000);
+
     Ok((
         database_url,
         redis_url,
         database_max_connections,
         database_connection_timeout,
+        host,
+        port,
     ))
 }

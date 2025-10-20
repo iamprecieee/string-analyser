@@ -1,18 +1,18 @@
 use axum::{
-    Json,
-    extract::{Path, Query, State, rejection::QueryRejection},
+    extract::{rejection::QueryRejection, Path, Query, State},
     http::StatusCode,
     response::IntoResponse,
+    Json,
 };
 use chrono::{SecondsFormat, Utc};
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 
 use crate::{
     models::{
         filters::StringFilters,
         nlp::{InterpretedQuery, NlpResponse},
         properties::AnalysedString,
-        requests::NlpQuery,
+        requests::{CreateStringRequest, NlpQuery},
         responses::{ApiErrorResponse, GetStringsResponse},
         state::AppState,
     },
@@ -22,6 +22,18 @@ use crate::{
     },
 };
 
+#[utoipa::path(
+    post,
+    path = "/strings",
+    request_body = CreateStringRequest,
+    responses(
+        (status = 201, description = "String created successfully", body = AnalysedString),
+        (status = 400, description = "Bad request - missing value field", body = ApiErrorResponse),
+        (status = 409, description = "Conflict - string already exists", body = ApiErrorResponse),
+        (status = 422, description = "Unprocessable entity - invalid data type", body = ApiErrorResponse)
+    ),
+    tag = "Strings"
+)]
 pub async fn create_string(
     State(state): State<AppState>,
     Json(payload): Json<Value>,
@@ -107,6 +119,18 @@ pub async fn create_string(
     }
 }
 
+#[utoipa::path(
+    get,
+    path = "/strings/{string_value}",
+    params(
+        ("string_value" = String, Path, description = "The exact string value to retrieve")
+    ),
+    responses(
+        (status = 200, description = "String found", body = AnalysedString),
+        (status = 404, description = "String not found", body = ApiErrorResponse)
+    ),
+    tag = "Strings"
+)]
 pub async fn get_string(
     State(state): State<AppState>,
     Path(string_value): Path<String>,
@@ -152,6 +176,22 @@ pub async fn get_string(
     }
 }
 
+#[utoipa::path(
+    get,
+    path = "/strings",
+    params(
+        ("is_palindrome" = Option<bool>, Query, description = "Filter by palindrome status"),
+        ("min_length" = Option<i32>, Query, description = "Minimum string length"),
+        ("max_length" = Option<i32>, Query, description = "Maximum string length"),
+        ("word_count" = Option<i32>, Query, description = "Exact word count"),
+        ("contains_character" = Option<String>, Query, description = "Filter by character presence")
+    ),
+    responses(
+        (status = 200, description = "List of strings matching filters", body = GetStringsResponse),
+        (status = 400, description = "Invalid query parameters", body = ApiErrorResponse)
+    ),
+    tag = "Strings"
+)]
 pub async fn get_all_strings(
     state: State<AppState>,
     query: Query<StringFilters>,
@@ -205,6 +245,18 @@ pub async fn get_all_strings_wrapper(
     }
 }
 
+#[utoipa::path(
+    delete,
+    path = "/strings/{string_value}",
+    params(
+        ("string_value" = String, Path, description = "The exact string value to delete")
+    ),
+    responses(
+        (status = 204, description = "String deleted successfully"),
+        (status = 404, description = "String not found")
+    ),
+    tag = "Strings"
+)]
 pub async fn delete_string(
     State(state): State<AppState>,
     Path(string_value): Path<String>,
@@ -218,14 +270,15 @@ pub async fn delete_string(
     {
         Ok(true) => {
             let id = compute_sha256(&string_value);
-            
+
             let cache_clone = state.cache.clone();
             tokio::spawn(async move {
                 let _ = cache_clone.delete(&id).await;
                 let _ = cache_clone.invalidate().await;
             });
 
-            (StatusCode::NO_CONTENT).into_response()},
+            (StatusCode::NO_CONTENT).into_response()
+        }
         Ok(false) => (
             StatusCode::NOT_FOUND,
             Json(ApiErrorResponse::not_found(
@@ -245,6 +298,19 @@ pub async fn delete_string(
     }
 }
 
+#[utoipa::path(
+    get,
+    path = "/strings/filter-by-natural-language",
+    params(
+        ("query" = String, Query, description = "Natural language query string")
+    ),
+    responses(
+        (status = 200, description = "Strings matching natural language query", body = NlpResponse),
+        (status = 400, description = "Unable to parse query", body = ApiErrorResponse),
+        (status = 422, description = "Conflicting filters detected", body = ApiErrorResponse)
+    ),
+    tag = "Strings"
+)]
 pub async fn get_by_natural_language(
     State(state): State<AppState>,
     Query(query): Query<NlpQuery>,

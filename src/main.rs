@@ -1,6 +1,6 @@
 use std::net::SocketAddr;
 
-use anyhow::{Ok, Result, anyhow};
+use anyhow::{anyhow, Ok, Result};
 use string_analyser::{
     api::build_app,
     cache::{connection::create_redis_client, service::CacheService},
@@ -32,7 +32,9 @@ async fn main() -> Result<()> {
 
     let app = build_app(state).await;
 
-    let listener = TcpListener::bind("0.0.0.0:8001").await.unwrap();
+    let listener = TcpListener::bind(format!("{}:{}", &config_data.4, &config_data.5))
+        .await
+        .unwrap();
 
     axum::serve(
         listener,
