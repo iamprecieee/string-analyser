@@ -14,7 +14,7 @@ pub fn analyse_string(input: &str) -> StringProperties {
     StringProperties {
         length: input.len() as i32,
         is_palindrome: is_palindrome(input),
-        unique_character_count: get_unique_chars_count(input),
+        unique_characters: get_unique_chars_count(input),
         word_count: get_word_count(input),
         sha256_hash: compute_sha256(input),
         character_frequency_map: get_char_frequency_map(input),
