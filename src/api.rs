@@ -1,8 +1,8 @@
 use axum::{
+    Json, Router,
     http::StatusCode,
     response::IntoResponse,
     routing::{delete, get, post},
-    Json, Router,
 };
 use serde_json::json;
 use utoipa::OpenApi;

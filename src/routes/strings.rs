@@ -1,11 +1,11 @@
 use axum::{
-    extract::{rejection::QueryRejection, Path, Query, State},
+    Json,
+    extract::{Path, Query, State, rejection::QueryRejection},
     http::StatusCode,
     response::IntoResponse,
-    Json,
 };
 use chrono::{SecondsFormat, Utc};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::{
     models::{

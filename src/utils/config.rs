@@ -1,6 +1,6 @@
 use std::env;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 
 pub fn load_config() -> Result<(String, String, u32, u64, String, u32)> {
     let database_url =

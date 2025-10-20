@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use sqlx::{postgres::PgPoolOptions, Error, PgPool, Result};
+use sqlx::{Error, PgPool, Result, postgres::PgPoolOptions};
 
 pub type DbPool = PgPool;
 

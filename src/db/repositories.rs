@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use chrono::{DateTime, SecondsFormat, Utc};
-use sqlx::{query, Error, QueryBuilder, Result};
+use sqlx::{Error, QueryBuilder, Result, query};
 
 use crate::{
     db::pool::DbPool,

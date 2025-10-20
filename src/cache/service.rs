@@ -1,4 +1,4 @@
-use redis::{aio::MultiplexedConnection, AsyncCommands, RedisError};
+use redis::{AsyncCommands, RedisError, aio::MultiplexedConnection};
 
 use crate::models::properties::AnalysedString;
 

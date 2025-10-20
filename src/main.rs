@@ -1,6 +1,6 @@
 use std::net::SocketAddr;
 
-use anyhow::{anyhow, Ok, Result};
+use anyhow::{Ok, Result, anyhow};
 use string_analyser::{
     api::build_app,
     cache::{connection::create_redis_client, service::CacheService},
