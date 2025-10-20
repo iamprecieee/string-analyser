@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM analysed_strings WHERE value = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "dfa6ed4420861c5a40d3b22b9ee183578fa0e318e2e4c1ead6bf72813fc34cf7"
+}

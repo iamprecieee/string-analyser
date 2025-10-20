@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, value, length, is_palindrome, unique_char_count, word_count, char_frequency_map, created_at\n            FROM analysed_strings\n            WHERE value = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "value",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "length",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "is_palindrome",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 4,
+        "name": "unique_char_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "word_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "char_frequency_map",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 7,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "5192a60380bb28b82d1dae727da16ebf7c4c87843801c8524571a6f1070c81de"
+}

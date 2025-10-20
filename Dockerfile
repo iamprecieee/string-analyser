@@ -1,4 +1,4 @@
-FROM rust:1.82-slim AS builder
+FROM rust:1.90-slim AS builder
 
 RUN apt-get update && apt-get install -y \
     pkg-config \
@@ -11,7 +11,11 @@ WORKDIR /app
 
 COPY Cargo.toml ./
 
+COPY .sqlx ./.sqlx
+
 COPY src/ ./src/
+
+ENV SQLX_OFFLINE=true
 
 RUN cargo build --release --bin string-analyser
 

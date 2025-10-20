@@ -1,7 +1,7 @@
 [package]
 name = "string-analyser"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 anyhow = "1.0.100"
@@ -17,3 +17,10 @@ sqlx = { version = "0.8.6", features = ["runtime-tokio-rustls", "postgres", "chr
 tokio = { version = "1.48.0", features = ["full"] }
 utoipa = { version = "5.4.0", features = ["axum_extras"] }
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
+
+[[bin]]
+name = "string-analyser"
+
+[lib]
+name = "string-analyser"
+path = "src/lib.rs"

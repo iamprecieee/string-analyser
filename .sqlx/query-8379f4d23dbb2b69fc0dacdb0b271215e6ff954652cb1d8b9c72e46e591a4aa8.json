@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO analysed_strings (id, value, length, is_palindrome, unique_char_count, word_count, char_frequency_map, created_at)\n            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Text",
+        "Int4",
+        "Bool",
+        "Int4",
+        "Int4",
+        "Jsonb",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8379f4d23dbb2b69fc0dacdb0b271215e6ff954652cb1d8b9c72e46e591a4aa8"
+}
