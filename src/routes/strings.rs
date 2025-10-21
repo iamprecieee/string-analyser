@@ -280,7 +280,7 @@ pub async fn delete_string(
         .await
     {
         Ok(true) => {
-            let id = compute_sha256(&string_value);
+            let id = compute_sha256(&normalised_string_value);
 
             let cache_clone = state.cache.clone();
             tokio::spawn(async move {

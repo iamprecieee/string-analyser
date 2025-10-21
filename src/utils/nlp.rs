@@ -49,7 +49,7 @@ pub fn parse_natural_language(query: &str) -> Result<ParsedQuery, String> {
             }
         }
 
-        if token == "exactly" || token == "equals" && index + 1 < tokens.len() {
+        if (token == "exactly" || token == "equals") && index + 1 < tokens.len() {
             if let Ok(val) = tokens[index + 1].parse::<i32>() {
                 filters.min_length = Some(val);
                 filters.max_length = Some(val);
@@ -144,17 +144,22 @@ pub fn parse_natural_language(query: &str) -> Result<ParsedQuery, String> {
             }
         }
 
-        if (token == "contains"
-            || token == "containing"
-            || token == "with"
-            || token == "letter"
-            || token == "character")
-            && index + 1 < tokens.len()
-        {
-            let next_token = tokens[index + 1];
-            if let Some(first_char) = next_token.chars().next() {
-                filters.contains_character = Some(first_char.to_string());
-                index += 1;
+        if token.contains("contain") || token == "with" {
+            if index + 2 < tokens.len() && (tokens[index + 1] == "the" || tokens[index + 1] == "a")
+            {
+                if tokens[index + 2] == "letter" || tokens[index + 2] == "character" {
+                    if index + 3 < tokens.len() {
+                        if let Some(ch) = tokens[index + 3].chars().next() {
+                            filters.contains_character = Some(ch.to_string());
+                            index += 3;
+                        }
+                    }
+                }
+            } else if index + 1 < tokens.len() {
+                if let Some(ch) = tokens[index + 1].chars().next() {
+                    filters.contains_character = Some(ch.to_string());
+                    index += 1;
+                }
             }
         }
 
