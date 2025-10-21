@@ -40,7 +40,7 @@ pub async fn create_string(
 ) -> impl IntoResponse {
     match payload.get("value") {
         Some(Value::String(s)) if !s.trim().is_empty() => {
-            let properties = analyse_string(s);
+            let properties = analyse_string(s.trim());
 
             match state.repository.exists_by_id(&properties.sha256_hash).await {
                 Ok(true) => {
