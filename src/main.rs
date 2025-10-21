@@ -14,6 +14,8 @@ use tokio::net::TcpListener;
 async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
 
+    tracing_subscriber::fmt().init();
+
     let config_data = load_config()?;
 
     let pool = create_pool(&config_data.0, *&config_data.2, *&config_data.3)
@@ -35,6 +37,8 @@ async fn main() -> Result<()> {
     let listener = TcpListener::bind(format!("{}:{}", &config_data.4, &config_data.5))
         .await
         .unwrap();
+
+    tracing::info!("Server is running at {}:{}", &config_data.4, &config_data.5);
 
     axum::serve(
         listener,

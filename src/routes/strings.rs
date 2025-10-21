@@ -53,9 +53,10 @@ pub async fn create_string(
                     )
                         .into_response();
                 }
-
                 Ok(false) => {}
-                Err(_) => {
+                Err(e) => {
+                    tracing::error!("String existence check failed: {:?}", e);
+
                     return (
                         StatusCode::INTERNAL_SERVER_ERROR,
                         Json(ApiErrorResponse::internal_error(
@@ -88,14 +89,18 @@ pub async fn create_string(
 
                     (StatusCode::CREATED, Json(analysed_string)).into_response()
                 }
-                Err(_) => (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    Json(ApiErrorResponse::internal_error(
-                        "A server error occurred. Try again later".to_string(),
-                        None,
-                    )),
-                )
-                    .into_response(),
+                Err(e) => {
+                    tracing::error!("String creation failed: {:?}", e);
+
+                    (
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        Json(ApiErrorResponse::internal_error(
+                            "A server error occurred. Try again later".to_string(),
+                            None,
+                        )),
+                    )
+                        .into_response()
+                }
             }
         }
 
@@ -165,14 +170,17 @@ pub async fn get_string(
             )),
         )
             .into_response(),
-        Err(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ApiErrorResponse::internal_error(
-                "A server error occurred. Try again later".to_string(),
-                None,
-            )),
-        )
-            .into_response(),
+        Err(e) => {
+            tracing::error!("String retrieval failed: {:?}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ApiErrorResponse::internal_error(
+                    "A server error occurred. Try again later".to_string(),
+                    None,
+                )),
+            )
+                .into_response()
+        }
     }
 }
 
@@ -217,14 +225,17 @@ pub async fn get_all_strings(
             )
                 .into_response()
         }
-        Err(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ApiErrorResponse::internal_error(
-                "A server error occurred. Try again later".to_string(),
-                None,
-            )),
-        )
-            .into_response(),
+        Err(e) => {
+            tracing::error!("String filter-retrieval failed: {:?}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ApiErrorResponse::internal_error(
+                    "A server error occurred. Try again later".to_string(),
+                    None,
+                )),
+            )
+                .into_response()
+        }
     }
 }
 
@@ -287,14 +298,17 @@ pub async fn delete_string(
             )),
         )
             .into_response(),
-        Err(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ApiErrorResponse::internal_error(
-                "A server error occurred. Try again later".to_string(),
-                None,
-            )),
-        )
-            .into_response(),
+        Err(e) => {
+            tracing::error!("String deletion failed: {:?}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ApiErrorResponse::internal_error(
+                    "A server error occurred. Try again later".to_string(),
+                    None,
+                )),
+            )
+                .into_response()
+        }
     }
 }
 
@@ -363,13 +377,16 @@ pub async fn get_by_natural_language(
             )
                 .into_response()
         }
-        Err(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ApiErrorResponse::internal_error(
-                "A server error occurred. Try again later".to_string(),
-                None,
-            )),
-        )
-            .into_response(),
+        Err(e) => {
+            tracing::error!("String nlp-retrieval failed: {:?}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ApiErrorResponse::internal_error(
+                    "A server error occurred. Try again later".to_string(),
+                    None,
+                )),
+            )
+                .into_response()
+        }
     }
 }
