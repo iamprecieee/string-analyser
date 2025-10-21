@@ -1,6 +1,6 @@
 # String Analysis API
 
-A REST API service that analyses strings and stores their computed properties including length, palindrome status, character frequency, and more. Built with Rust, Axum, PostgreSQL, and Redis.
+A simple REST API service that analyses strings and stores their computed properties including length, palindrome status, character frequency, and more. Built with Rust, Axum, PostgreSQL, and Redis.
 
 ## Features
 
@@ -10,17 +10,32 @@ A REST API service that analyses strings and stores their computed properties in
 - Natural language query support
 - Redis caching with automatic invalidation
 - Rate limiting (20 requests/minute per IP)
-- OpenAPI/Swagger documentation
+- OpenAPI/Swagger UI documentation
 - Input validation and sanitization
+
+## Dependencies
+
+This project uses the following Rust crates:
+
+- **axum** - Web framework
+- **tokio** - Async runtime
+- **sqlx** - Database (postgresql) support
+- **serde** and **serde_json** - Serialization/deserializationutilities (CORS)
+- **utoipa** and **utoipa-swagger-ui** - OpenAPI/Swagger UI integration
+- **chrono** - Date and time handling
+- **dotenvy** - Environment variable loading
+- **anyhow** - Error handling
+- **tracing** and **tracing-subscriber** - Logging implementation
+- **sha2** and **hex** - String hashing
 
 ## Prerequisites
 
-- Rust
+- Rust/Cargo
 - PostgreSQL
 - Redis
 - SQLx CLI
 
-## Dependencies Installation
+## Installation
 
 ### Install Rust
 ```bash
@@ -54,25 +69,26 @@ brew install redis
 brew services start redis
 ```
 
-### Install SQLx CLI
+### Install SQLx CLI (with tls support)
 ```bash
 cargo install sqlx-cli --no-default-features --features postgres,rustls
 ```
 
 ## Setup Instructions
 
-### 1. Clone the repository
+### Clone the repository
 ```bash
 git clone <repository-url>
-cd string_analysis_api
+cd string_analyser
 ```
 
-### 2. Configure environment variables
+### Configure environment variables
 Create a `.env` file in the project root:
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/string_analysis
 REDIS_URL=redis://localhost:6379
-PORT=3000
+PORT=8000
+HOST=0.0.0.0
 RATE_LIMIT_PER_MINUTE=60
 LOG_LEVEL=info
 ```
@@ -80,11 +96,12 @@ LOG_LEVEL=info
 **Environment Variables:**
 - `DATABASE_URL`: PostgreSQL connection string
 - `REDIS_URL`: Redis connection string
-- `PORT`: HTTP server port (default: 3000)
+- `PORT`: HTTP server port (default: 8000)
+- `HOST`: HTTP server host (default: 0.0.0.0)
 - `RATE_LIMIT_PER_MINUTE`: Rate limit per IP (default: 60)
 - `LOG_LEVEL`: Logging level (info/debug/warn/error)
 
-### 3. Create and setup database
+### Create and setup database
 ```bash
 # Create database
 sqlx database create
@@ -105,12 +122,23 @@ cargo build --release
 cargo run
 ```
 
+The server will start on the configured host and port (default: http://0.0.0.0:8000)
+
 ### Production mode
 ```bash
 cargo run --release
 ```
 
-The server will start on `http://localhost:3000`
+### Docker Deployment
+1. Build the Docker image:
+```bash
+docker build -t string_analyser .
+```
+
+2. Run the Docker container:
+```bash
+docker run -p 8000:8000 -e RUST_LOG=info -e SERVER_HOST=0.0.0.0 -e SERVER_PORT=8000 string_analyser
+```
 
 ## API Documentation
 
@@ -124,7 +152,7 @@ OpenAPI JSON specification:
 http://localhost:8000/api-docs/openapi.json
 ```
 
-## API Endpoints
+## API Documentation
 
 ### Health Check
 ```
@@ -199,3 +227,11 @@ string_analysis_api/
 ├── DESIGN.md           # Design doc       
 └── README.md
 ```
+
+## Rate Limiting
+The API implements IP-based rate limiting to prevent abuse:
+
+- Limit: 20 requests per minute per IP address
+- Response: HTTP 429 (Too Many Requests) when limit exceeded
+- Window: Fixed 60-second window aligned to minute boundaries
+- Tracking: Uses redis for thread-safe concurrent access

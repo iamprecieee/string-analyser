@@ -120,7 +120,7 @@ created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
 
 **Filter Logic**:
 - All filters are *AND* conditions
-- `contains_character` uses JSONB containment: `char_frequency ? 'a'`
+- `contains_character` uses JSONB containment: `char_frequency_map ? 'a'`
 - Results ordered by `created_at DESC`
 
 **Processing Steps**:
@@ -144,13 +144,16 @@ created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
 
 | Pattern | Maps To |
 |---------|---------|
-| "longer than N" / "more than N characters" | `min_length = N + 1` |
-| "shorter than N" / "less than N characters" | `max_length = N - 1` |
-| "exactly N characters" | `min_length = N, max_length = N` |
+| "longer than N" / "more than N" / "greater than N" / "bigger than N" / "larger than N" | `min_length = N + 1` |
+| "shorter than N" / "less than N" / "smaller than N" | `max_length = N - 1` |
+| "exactly N" / "equals N" | `min_length = N, max_length = N` |
 | "palindrome" / "palindromic" | `is_palindrome = true` |
-| "N words" / "N-word" / "single word" | `word_count = N` |
+| "N words" / "N-word" / "single word" / "one word" | `word_count = N` |
 | "contains X" / "containing X" / "with X" | `contains_character = X` (first char) |
 | "letter X" / "character X" | `contains_character = X` |
+| "first vowel" / "second vowel" / etc. | `contains_character` = a, e, i, o, or u (by position) |
+| "first consonant" / "third consonant" / etc. | `contains_character` = b, c, d, f, g... (by position) |
+| "first letter" / "5th alphabet" / "10th letter" | `contains_character` = a-z (by alphabetical position) |
 
 **Parser Implementation**:
 - Tokenize query (split by spaces, lowercase)
@@ -216,21 +219,22 @@ Split on any whitespace, count non-empty tokens
 Case-insensitive character counts
 ```
 "hello" ⟶ {"h": 1, "e": 1, "l": 2, "o": 1}
-"AaA" ⟶ {"a": 1}
+"AaA" ⟶ {"a": 3}
 ```
 
 ## Rate Limiting
 
-**Strategy**: Token bucket per IP address
+**Strategy**:  Fixed window counter per IP address
 
 **Implementation**:
 - Redis key: `ratelimit:{ip_address}:{current_minute}`
-- Limit: 60 requests per minute per IP
-- Sliding window using current minute timestamp
+- Limit: 20 requests per minute per IP
+- Fixed window resets every 60 seconds (based on current minute timestamp)
+- Lua script atomically increments counter and sets TTL
 - Return 429 Too Many Requests when exceeded
 - Include headers:
-  - `X-RateLimit-Limit: 60`
-  - `X-RateLimit-Remaining: 47`
+  - `X-RateLimit-Limit: 20`
+  - `X-RateLimit-Remaining: 17`
   - `X-RateLimit-Reset: {unix_timestamp}`
 
 ## Caching Strategy
