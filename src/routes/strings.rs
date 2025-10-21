@@ -72,7 +72,7 @@ pub async fn create_string(
 
             let analysed_string = AnalysedString {
                 id: properties.sha256_hash.clone(),
-                value: s.to_string(),
+                value: s.trim().to_string(),
                 properties,
                 created_at,
             };
